@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: rgb(17, 17, 17);
+            --surface: rgba(28, 28, 28, 0.9);
+            --surface-hover: rgba(36, 36, 36, 0.95);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.13);
+            --text-primary: #d0d0d0;
+            --text-secondary: rgba(200, 200, 200, 0.5);
+            --text-muted: rgba(200, 200, 200, 0.3);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ── Search ── */
+        .search-wrap {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            width: 380px;
+            max-width: 90vw;
+        }
+
+        .searchbar {
+            width: 100%;
+            background: rgba(22, 22, 22, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 16px 10px 40px;
+            color: var(--text-primary);
+            outline: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            backdrop-filter: blur(12px);
+        }
+
+        .searchbar:focus {
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+        }
+
+        .searchbar::placeholder { color: var(--text-muted); }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+        /* ── Grid ── */
+        .scriptscontainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+            gap: 12px;
+        }
+
+        /* ── Card ── */
+        .script {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .script:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            background: var(--surface-hover);
+        }
+
+        .script img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .script-content {
+            padding: 10px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+        }
+
+        .script h3 {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #c8c8c8;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-name {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-name i, .views i { font-size: 0.65rem; opacity: 0.5; flex-shrink: 0; }
+
+        .views {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 7px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 3px;
+            font-size: 0.62rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.03em;
+        }
+
+        /* ── Copy button ── */
+        .copy {
+            margin-top: auto;
+            padding: 7px 10px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s, color 0.18s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .copy:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.2);
+            color: #e0e0e0;
+        }
+
+        .copy:active { background: rgba(255,255,255,0.1); }
+
+        /* ── Spinner ── */
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 2px solid rgba(255,255,255,0.06);
+            border-radius: 50%;
+            border-top-color: rgba(255,255,255,0.3);
+            animation: spin 0.9s linear infinite;
+            margin: 60px auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            letter-spacing: 0.04em;
+        }
+
+        .fade-in { animation: fadeIn 0.35s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Scroll-to-top ── */
+        .floating-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: rgba(28,28,28,0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity 0.2s, visibility 0.2s, transform 0.2s, background 0.15s;
+        }
+
+        .floating-btn:hover {
+            background: rgba(40,40,40,0.98);
+            color: #e0e0e0;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .floating-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .end-msg {
+            text-align: center;
+            padding: 28px;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="search-wrap">
+        <i class="fas fa-search search-icon"></i>
+        <input class="searchbar" placeholder="search scripts...">
+    </div>
+
+    <div style="padding: 68px 20px 24px;">
+        <div class="scriptscontainer"></div>
+    </div>
+
+    <div class="floating-btn" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script>
+        const proxies = [
+            'https://cors-anywhere.herokuapp.com/',
+            'https://api.codetabs.com/v1/proxy/?quest=',
+            'https://thingproxy.freeboard.io/fetch/'
+        ];
+
+        let page = 1;
+        let loading = false;
+        let proxy = 0;
+
+        async function load() {
+            const container = document.querySelector('.scriptscontainer');
+            container.innerHTML = '<div class="col-span-full"><div class="loading-spinner"></div></div>';
+            try {
+                const res = await fetch(proxies[proxy] + 'https://scriptblox.com/api/script/fetch');
+                const data = await res.json();
+                if (data?.result?.scripts) addscript(data.result.scripts);
+            } catch (e) {
+                proxy = (proxy + 1) % proxies.length;
+                await load();
+            }
+        }
+
+        async function loadpage(p = 2) {
+            const container = document.querySelector('.scriptscontainer');
+            loading = true;
+            const ind = document.createElement('div');
+            ind.className = 'col-span-full';
+            ind.innerHTML = '<div class="loading-spinner"></div>';
+            container.appendChild(ind);
+            try {
+                const res = await fetch(proxies[proxy] + `https://scriptblox.com/api/script/fetch?page=${p}`);
+                const data = await res.json();
+                container.removeChild(ind);
+                if (data?.result?.scripts?.length > 0) {
+                    addscript(data.result.scripts, true);
+                } else {
+                    const end = document.createElement('div');
+                    end.className = 'end-msg col-span-full';
+                    end.textContent = '— end of results —';
+                    container.appendChild(end);
+                }
+            } catch (e) {
+                proxy = (proxy + 1) % proxies.length;
+                await loadpage(p);
+            } finally {
+                loading = false;
+            }
+        }
+
+        function addscript(scripts, append = false) {
+            const container = document.querySelector('.scriptscontainer');
+            if (!append) container.innerHTML = '';
+            scripts.forEach(script => {
+                const raw = script.image;
+                const img = raw
+                    ? (raw.startsWith('http') ? raw : `https://scriptblox.com${raw}`)
+                    : 'https://placehold.co/400x200/1a1a1a/444444?text=—';
+
+                const card = document.createElement('div');
+                card.className = 'script fade-in';
+                card.innerHTML = `
+                    <img src="${img}" alt="${escHtml(script.title || 'Script')}">
+                    <div class="script-content">
+                        <h3 title="${escHtml(script.title || 'Unknown Script')}">${escHtml(script.title || 'Unknown Script')}</h3>
+                        <div class="game-name">
+                            <i class="fas fa-gamepad"></i>
+                            <span>${escHtml(script.game?.name || 'Unknown')}</span>
+                        </div>
+                        <div class="views">
+                            <i class="fas fa-eye"></i>
+                            ${script.views ? script.views.toLocaleString() : '—'}
+                        </div>
+                        ${script.tags?.length ? `<div class="tags-wrap">${script.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+                        <button class="copy" data-script="${encodeURIComponent(script.script || '')}">
+                            <i class="far fa-copy"></i> Copy
+                        </button>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function escHtml(s) {
+            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.copy');
+            if (!btn) return;
+            const text = decodeURIComponent(btn.getAttribute('data-script'));
+            const orig = btn.innerHTML;
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied';
+                btn.style.borderColor = 'rgba(255,255,255,0.25)';
+                btn.style.color = '#c8c8c8';
+                setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 2000);
+            } catch {
+                btn.innerHTML = '<i class="fas fa-times"></i> Failed';
+                setTimeout(() => { btn.innerHTML = orig; }, 2000);
+            }
+        });
+
+        const searchbar = document.querySelector('.searchbar');
+        let searchTimeout;
+        searchbar.addEventListener('input', async (e) => {
+            clearTimeout(searchTimeout);
+            const q = e.target.value.trim();
+            const container = document.querySelector('.scriptscontainer');
+            if (!q) { await load(); return; }
+            container.innerHTML = '<div class="col-span-full"><div class="loading-spinner"></div></div>';
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(proxies[proxy] + `https://scriptblox.com/api/script/search?q=${encodeURIComponent(q)}`);
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    if (data?.result?.scripts?.length > 0) {
+                        addscript(data.result.scripts);
+                    } else {
+                        container.innerHTML = `<div class="empty-state col-span-full">
+                            <i class="fas fa-search" style="font-size:1.5rem;margin-bottom:12px;display:block;opacity:0.2"></i>
+                            no results for "${escHtml(q)}"
+                        </div>`;
+                    }
+                } catch {
+                    proxy = (proxy + 1) % proxies.length;
+                    setTimeout(() => searchbar.dispatchEvent(new Event('input')), 500);
+                }
+            }, 500);
+        });
+
+        const scrollBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) scrollBtn.classList.add('visible');
+            else scrollBtn.classList.remove('visible');
+        });
+
+        window.addEventListener('scroll', async () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 && !loading) {
+                page++;
+                await loadpage(page);
+            }
+        });
+
+        load();
+    </script>
+</body>
+</html>
